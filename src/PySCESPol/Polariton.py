@@ -131,15 +131,23 @@ class PolaritonLogger():
 
 class TCPolaritonRunner(TCRunner):
         
-    def __init__(self, coupled_mol: CoupledMolecule, atoms: list, tc_opts: TCRunnerOptions, max_wait=20, prev_ref_job: TCJob = None,) -> None:
+    # def __init__(self, coupled_mol: CoupledMolecule, atoms: list, tc_opts: TCRunnerOptions, max_wait=20, prev_ref_job: TCJob = None,) -> None:
+    def __init__(self, config: dict) -> None:
 
-        super().__init__(atoms, tc_opts, max_wait)
+        tc_opts = TCRunnerOptions()
+        for opt in config['tc_runner_opts']:
+            setattr(tc_opts, opt, config['tc_runner_opts'][opt])
+        coupled_mol = CoupledMolecule(**config['coupled_mol'])
+        mol = Molecule.from_file(config['coordinates'])
+        atoms = mol.symbols
+
+        super().__init__(atoms, tc_opts)
 
         self.coupled_mol = coupled_mol
         self.masses = np.array([[pt.to_mass(symbol)]*3 for symbol in atoms]).flatten()
 
         self._prev_evecs = None
-        self._prev_ref_job = prev_ref_job
+        self._prev_ref_job = config.get('prev_ref_job', None)
 
         self._polariton_logger = PolaritonLogger()
         self._tc_logger = TCJobsLogger()

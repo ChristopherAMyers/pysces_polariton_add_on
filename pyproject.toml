@@ -29,8 +29,13 @@ classifiers = [
   "Development Status :: 4 - Beta"
 ]
 
-# [project.urls]
-# Repository = "https://github.com/AnanthGroup/AI-LSC-IVR"
+# -------------------------
+# Additions for packaging and plugin registration
+# -------------------------
 
-# [project.scripts]
-# pysces = "Polariton.TCPolaritonRunner:main"
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["PySCESPol"]
+
+[project.entry-points."pysces.plugins"]
+pyscespol = "PySCESPol.Polariton:TCPolaritonRunner"

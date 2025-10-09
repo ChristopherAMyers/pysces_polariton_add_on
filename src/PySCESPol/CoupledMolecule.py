@@ -15,6 +15,7 @@ class CoupledMolecule(AdiabaticStates):
                  rwa: bool = False,
                  dse: bool = True,
                  pdt: bool = True,
+                 gc: float = None,
                  ):
         '''
             Create a molecule that is coupled to a polariton cavity
@@ -74,6 +75,8 @@ class CoupledMolecule(AdiabaticStates):
         self.mol_dipole_matrix = np.zeros((self._n_elec, self._n_elec, 3))
         self.mol_dipole_matrix_gradient = np.zeros((self._n_elec, self._n_elec, self.n_nuclei*3, 3))
 
+        if gc is not None:
+            self._gc = gc
 
         #   internal components used to store the hamiltonian
         self._H_d = np.zeros_like(self._hamiltonian)
