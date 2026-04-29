@@ -1,0 +1,19 @@
+# Test many molecule propagator for single molecule case
+# Inputs from old monomer trajectories
+
+Start,
+
+head -12 nuc_geo.xyz > q0.xyz      #  Old nuclear positions
+head -12 nuclear_P.txt > p0.xyz    #  Old nuclear momenta
+head -12 electric_pq.txt > px.dat  #  Old electronic phase space variables
+
+# Set number of time steps inside slurm script - run_namd.slurm
+
+# Initialize
+bash fresh.sh
+
+# Run trajectory
+sbatch run_namd.slurm
+
+# Plot and compare energy
+python plot_energy_comparison.py

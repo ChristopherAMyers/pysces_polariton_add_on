@@ -1,0 +1,16 @@
+run           energy
+basis         6-31g*
+charge        0
+spinmult      1
+method        pbe0
+cis           yes
+cisnumstates  3
+cisguessvecs  10
+coordinates   coordinate.xyz
+ciscouplings  yes
+cisgradients  yes 
+convthre     1E-6
+maxit        300
+cistransdipolederiv  yes
+cisconvtol   1E-5
+cismaxiter   500
