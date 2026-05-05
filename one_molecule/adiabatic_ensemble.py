@@ -6,6 +6,7 @@ Created on Sun Mar  8 09:37:46 2026
 """
 
 import numpy as np
+from scipy.optimize import linear_sum_assignment
 
 class AdiabaticStates():
     def __init__(self, n_states, n_nuclei) -> None:
@@ -72,7 +73,7 @@ class AdiabaticStates():
         self.eigen_val_gradients = np.zeros_like(self.eigen_val_gradients)
         self.eigen_vec_gradients = np.zeros_like(self.eigen_vec_gradients)
 
-    
+    '''    
     # Compute adiabatic polaritonic state energies and vectors
     def diagonalize_H(self, ref_eig_vecs=None, swap_signs=False):
         e_vals, e_vecs = np.linalg.eigh(self._hamiltonian)    # Diagonalize symmetric matrix
@@ -98,6 +99,55 @@ class AdiabaticStates():
 
         self._diagonalized = True
         return self.eigen_vals, self.eigen_vecs                           # return adiabatic states and energies
+    '''
+
+
+    # Compute adiabatic polaritonic state energies and vectors
+    def diagonalize_H(self, ref_eig_vecs=None, swap_signs=False):
+        e_vals, e_vecs = np.linalg.eigh(self._hamiltonian)    # Diagonalize symmetric matrix
+        order = np.argsort(e_vals)                            # Arrange in order of increasing energies
+
+        self.eigen_vals = e_vals[order]
+        self.eigen_vecs = e_vecs[:, order]
+
+    # Make largest component positive if needed
+        if swap_signs:
+            idx = np.argmax(np.abs(self.eigen_vecs), axis=0)
+            for i in range(self.eigen_vecs.shape[1]):
+                if (self.eigen_vecs[idx[i], i] < 0):
+                    self.eigen_vecs[:, i] *= -1.0
+
+    # First step: no previous eigenvectors, so keep energy order
+        if ref_eig_vecs is None:
+            self._diagonalized = True
+            return self.eigen_vals, self.eigen_vecs
+
+    # Track states using maximum overlap with previous eigenvectors
+        C_new = self.eigen_vecs.copy()
+        E_new = self.eigen_vals.copy()
+
+        overlap = np.abs(np.transpose(ref_eig_vecs) @ C_new)
+
+        old_ind, new_ind = linear_sum_assignment(-overlap)
+
+    # Put new states into old-state order
+        sort_old = np.argsort(old_ind)
+        new_ind = new_ind[sort_old]
+
+        C_fixed = C_new[:, new_ind]
+        E_fixed = E_new[new_ind]
+
+    # Fix signs after matching
+        signs = np.sign(np.sum(ref_eig_vecs * C_fixed, axis=0))
+        signs[signs == 0] = 1.0
+
+        self.eigen_vecs = C_fixed * signs
+        self.eigen_vals = E_fixed
+
+        self._diagonalized = True
+        return self.eigen_vals, self.eigen_vecs
+
+
 
     
     # Compute adiabatic gradient
@@ -132,16 +182,4 @@ class AdiabaticStates():
 
           self.NACs = couplings
           return self.NACs                                               # compute nacs
-
-
-
-
-
-
-
-
-
-
-
-
-
+    

@@ -60,7 +60,6 @@ def append_vector(fname, vec):
 
 
 
-
 # Build inputs for PYSCES
 def build_inputs(ref_eig_vecs):
 # Physical parameters
@@ -102,14 +101,24 @@ def build_inputs(ref_eig_vecs):
         mol_dipole_matrix_gradient=mol_dipole_matrix_gradient,
         ref_eig_vecs=ref_eig_vecs,
     )
+
+    # system.eigen_val_gradients is gradient of the relative polariton energy
+# Add back grad(E0) so nuclear force uses the absolute polariton surface
+    ground_gradient = np.load("ground_gradient.npy")
+    ground_gradient = ground_gradient.reshape(n_m * n_nuc * 3)
+
+    pol_grad = system.eigen_val_gradients.copy()
+    pol_grad = pol_grad + ground_gradient[None, :]
+
 # Return polaritonic stuff    
-    return system.eigen_vals, system.eigen_val_gradients, system.NACs, system.eigen_vecs
+    return system.eigen_vals, pol_grad, system.NACs, system.eigen_vecs  #system.eigen_val_gradients
+
 
 
 # Main driver
 def main():
 # Time step size    
-    dt = 4.00
+    dt = 4.0
     nel=4
 # Atomic masses
     au_mas = np.loadtxt("mass_new")
@@ -160,6 +169,7 @@ def main():
 ####################################
     pop = get_pop_wigner(q_e_old, p_e_old)
     elecE_ev = elecE * 27.21140795
+    elecE_ev = np.sort(elecE_ev)
 ###########################################
     append_vector("pop.dat", pop)
     append_vector("polaritonic_energy.dat", elecE_ev)
@@ -171,8 +181,8 @@ def main():
     print("dp_e/dt =", der[1,0:nel])
 
     ref_eig_vecs = eigvecs.copy()    
-    y = scipy_rk4(elecE, grad, nac, y, dt, au_mas)
-#    y = integrate_rk4(elecE, grad, nac, dt, y, au_mas)
+#    y = scipy_rk4(elecE, grad, nac, y, dt, au_mas)
+    y = integrate_rk4(elecE, grad, nac, dt, y, au_mas)
     np.savetxt("traj_status", y)
 # Save updated coordinates
     q_new = y[0:ndof]

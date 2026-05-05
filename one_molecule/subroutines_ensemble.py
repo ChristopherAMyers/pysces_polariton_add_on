@@ -116,9 +116,9 @@ def get_derivatives(au_mas, q, p, nac, grad, elecE):
 
     # Derivatives of elctronic mapping variables
     for i in range(nel):
-        xdpm   = 0 # NAC part of the derivative, x*d*p/m
-        pdpm   = 0 # NAC part of the derivative, p*d*p/m
-        sum_DE = 0 # Traceless Hamiltonian, sum(Ei - Ej)
+        xdpm   = 0.0 # NAC part of the derivative, x*d*p/m
+        pdpm   = 0.0 # NAC part of the derivative, p*d*p/m
+        sum_DE = 0.0  # Traceless Hamiltonian, sum(Ei - Ej)
         for j in range(nel):
             if j != i:
                 xdpm   += q[j] * np.matmul(nac[j,i,:], p[nel:]/au_mas)    # NAC part of position derivative
@@ -128,14 +128,17 @@ def get_derivatives(au_mas, q, p, nac, grad, elecE):
         der[0, i] =  (1.0/nel) * p[i] * sum_DE + xdpm     # total position derivative
         # momenta
         der[1, i] = -(1.0/nel) * q[i] * sum_DE + pdpm     # total momenta derivative
-   # momenta
-        diag_part = -(1.0/nel) * q[i] * sum_DE
-        nac_part  = pdpm
-        tmp_pdpm = p[j] * np.matmul(nac[j,i,:], p[nel:]/au_mas)
-        print("i,j =", i, j, "pdpm_contrib =", tmp_pdpm)
-#der[1, i] = diag_part + nac_part
-
-#        print(i, "dp_diag =", diag_part, "dp_nac =", nac_part, "dp_total =", der[1, i])
+        # Debug
+        if i == 1 or i == 2:
+            print("STATE", i)
+            print("elecE eV =", elecE * 27.21140795)
+            print("sum_DE Ha =", sum_DE)
+            print("dq_diag =", (1.0/nel) * p[i] * sum_DE)
+            print("dq_nac  =", xdpm)
+            print("dp_diag =", -(1.0/nel) * q[i] * sum_DE)
+            print("dp_nac  =", pdpm)
+            print("dq_total=", der[0,i])
+            print("dp_total=", der[1,i])
     
     # Derivatives of nuclear mapping variables
     for n in range(nnuc):
