@@ -35,7 +35,7 @@ gradient=np.zeros([n_m,n_elec,n_nuc,3])
 na_coupling=np.zeros([n_m,n_elec,n_elec,n_nuc,3])
 mu=np.zeros([n_m,n_elec,n_elec,3])
 tdp=np.zeros([n_m,n_elec,n_elec,n_nuc,3,3])
-
+ground_gradient=np.zeros([n_m,n_nuc,3])
 
 
 
@@ -53,13 +53,17 @@ for i in range(0, n_m):
 for i in range(0, n_m):
     path_traj = os.path.join(path_data.strip(),f'traj_{i+1}')
     print('Trajectory (grads and nacs) : ',path_traj)
+    path = os.path.join(path_traj.strip(),f'grad_{0}.dat')
+    grad0 = np.loadtxt(path)
+    ground_gradient[i,:,:] = grad0     # True ground gradient
+    gradient[i, 0, :, :] = 0.0         # Relative ground gradient
 #############################################################################    
-    for j in range(0,n_elec):
+    for j in range(1,n_elec):
         path = os.path.join(path_traj.strip(),f'grad_{j}.dat')
         grad = np.loadtxt(path)
         print(j)
         print(grad)
-        gradient[i,j,:,:]=grad
+        gradient[i,j,:,:]=grad - grad0
 #############################################################################        
         for k in range(j+1,n_elec):
             path = os.path.join(path_traj.strip(),f'nac_{j}{k}.dat')
@@ -99,20 +103,21 @@ for i in range(0, n_m):
             tdp_y = np.loadtxt(path_y)
             tdp_z = np.loadtxt(path_z)
 ##########################################
-            tdp[i,j,k,:,0,:] = tdp_x
-            tdp[i,j,k,:,1,:] = tdp_y
-            tdp[i,j,k,:,2,:] = tdp_z
-###########################################
-            tdp[i,k,j,:,0,:] = tdp_x
-            tdp[i,k,j,:,1,:] = tdp_y
-            tdp[i,k,j,:,2,:] = tdp_z
-###########################################
-            print(i,j,k)
+            tdp[i,j,k,:,:,0] = tdp_x
+            tdp[i,j,k,:,:,1] = tdp_y
+            tdp[i,j,k,:,:,2] = tdp_z
+##########################################
+            tdp[i,k,j,:,:,0] = tdp_x
+            tdp[i,k,j,:,:,1] = tdp_y
+            tdp[i,k,j,:,:,2] = tdp_z
+#########################################
+            print(i, j, k)
             print(tdp_x)
             print(tdp_y)
             print(tdp_z)
+##########################################################################
+#            tdp[i,j,k,:,0,:] = tdp_x
 #############################################################################
-################################################################################
 
 
 
@@ -142,4 +147,5 @@ np.save("gradient.npy", gradient)
 np.save("nac.npy", na_coupling)
 np.save("mu.npy", mu)
 np.save('energy.npy', energy)
+np.save("ground_gradient.npy", ground_gradient)
 print('Done')

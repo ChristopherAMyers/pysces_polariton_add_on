@@ -5,7 +5,7 @@ Start,
 
 head -12 nuc_geo.xyz > q0.xyz      #  Old nuclear positions
 head -12 nuclear_P.txt > p0.xyz    #  Old nuclear momenta
-head -12 electric_pq.txt > px.dat  #  Old electronic phase space variables
+head -2 electric_pq.txt > px.dat  #  Old electronic phase space variables
 
 # Set number of time steps inside slurm script - run_namd.slurm
 

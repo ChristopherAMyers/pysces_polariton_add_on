@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name="short"  #  Please attempt to give the job a descriptive name
+#SBATCH --job-name="n_m"  #  Please attempt to give the job a descriptive name
 #SBATCH --partition=gpu,pi.cisborn,cenvalarc.gpu
 #SBATCH --nodes=1                    # must be 1
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1                    # max 4.5 times the number of tasks per node
 #SBATCH --mem=16G
-#SBATCH --time=00:15:00
+#SBATCH --time=02:15:00
 #SBATCH --export=ALL
 
 
@@ -59,7 +59,7 @@ which terachem >>  env.out
 sleep 2
 
 echo "starting jobs" >> status.out
-for i in {1..4}
+for i in {1..40}
 do    
    bash setup.sh   
    cd traj_1
